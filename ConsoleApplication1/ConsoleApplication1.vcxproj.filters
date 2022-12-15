@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ConsoleApplication1.cpp">
+    <ClCompile Include="TransferParameters.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
