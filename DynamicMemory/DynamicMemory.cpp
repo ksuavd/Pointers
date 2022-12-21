@@ -2,8 +2,14 @@
 #include <iostream>
 using namespace std;
 #define tab "\t"
+#define delimiter  "-------------------------------"
+
+//#define DynamicMemory_1
+#define DynamicMemory_2
 void FillRand(int arr[], const int n);
+void FillRand(int** arr, const int rows, const int cols);
 void Print(int* arr, const int n);
+void Print(int** arr, const int rows, const int cols);
 
 int* push_back(int* arr,  int& n, int value);
 int* push_front(int* arr, int& n, int value);
@@ -13,9 +19,12 @@ int* pop_back(int* arr, int& n);
 int* pop_front(int* arr, int& n);
 int* erase(int* arr, int& n, int value_index);
 
+int** push_row_back(int** arr, int& rows, const int cols);
+
 int main()
 {
     setlocale(LC_ALL, ""); 
+#ifdef DynamicMemory_1
     int n; int value_index;
     cout << "Введите количество элементов: "; cin >> n;
     int* arr = new int[n];
@@ -24,7 +33,7 @@ int main()
     int value;
 
     cout << "Введите добавляемое значение (в конец массива): "; cin >> value;
-   arr= push_back(arr, n, value);
+    arr= push_back(arr, n, value);
     Print(arr, n);
 
     cout << "Введите добавляемое значение (в начало массива): "; cin >> value;
@@ -46,6 +55,41 @@ int main()
     Print(arr, n);
    
     delete[] arr;
+#endif // DynamicMemory_1
+    int rows;	//количество строк
+    int cols;	//количество столбцов (количество элементов строки)
+    cout << "Введите количество строк: "; cin >> rows;
+    cout << "Введите количество элементов строки: "; cin >> cols;
+
+    int** arr = new int* [rows];	//создаем массив указателей
+    for (int i = 0; i < rows; i++)
+    {
+        //создаем строки двумерного массива:
+        arr[i] = new int[cols];
+    }
+
+    FillRand(arr, rows, cols);
+    Print(arr, rows, cols);
+    delimiter;
+    arr = push_row_back(arr, rows, cols);
+    Print(arr, rows, cols);
+    //1.удаляем строки двумерного массива
+    for (int i = 0; i < rows; i++)
+    {
+        delete[]arr[i];
+    }
+   //2. удаляем массив указателей
+    delete[]arr;
+}
+void FillRand(int** arr, const int rows, const int cols)
+{
+    for (int i = 0; i < rows; i++)	//i - нумерует строки
+    {
+        for (int j = 0; j < cols; j++)	//j - нумерует элементы строки
+        {
+            arr[i][j] = rand() % 100;
+        }
+    }
 }
 void FillRand(int arr[], const int n)
 {
@@ -54,6 +98,17 @@ void FillRand(int arr[], const int n)
     {
         //1. обращаемся к элементу массива через арифметику указателей и оператор разыменования:
         *(arr + i) = rand() % 100;
+    }
+}
+void Print(int** arr, const int rows, const int cols)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            cout << arr[i][j] << tab;
+        }
+        cout << endl;
     }
 }
 void Print(int arr[], const int n)
@@ -103,14 +158,18 @@ int* push_front(int* arr, int& n, int value)
 int* insert(int* arr, int& n, int value, int value_index)
 {
     int* buffer = new int[n + 1];
-    for (int i = 0; i < n+1; i++)
+    /*for (int i = 0; i < value_index; i++) buffer[i] = arr[i];
+   for (int i = value_index;i<n;i++) buffer[i+1] = arr[i];*/
+    for (int i = 0; i < n; i++)
     {
-        if (i < value_index) buffer[i] = arr[i];
-        else if (i == value_index)buffer[i] = value;
-        else  buffer[i] = arr[i - 1];
+       // if (i < value_index)buffer[i] = arr[i]; else buffer[i + 1] = arr[i];
+        //(i < value_index ? buffer[i] : buffer[i + 1]) = arr[i];
+        buffer[i < value_index ? i : i + 1] = arr[i];
     }
+    buffer[value_index] = value;
     delete[] arr;
     arr = buffer;
+    n++;
     return arr;
 }
 int* pop_back(int* arr, int& n)
@@ -147,5 +206,25 @@ int* erase(int* arr, int& n, int value_index)
     delete[] arr;
     arr = buffer;
     n--;
+    return arr;
+}
+int** push_row_back(int** arr, int& rows, const int cols)
+{
+    //1) Создаем буферный массив указателей:
+    int** buffer = new int* [rows + 1];
+    //2) Копируем адреса строк в новый массив указателей:
+    for (int i = 0; i < rows; i++)
+    {
+        buffer[i] = arr[i];
+    }
+    //3) Удаляем исходный массив указателей:
+    delete[] arr;
+    //4) Подменяем адрес в указателе 'arr' адресом нового массива:
+    arr = buffer;
+    //5) Создаем новую строку:
+    arr[rows] = new int[cols] {};
+    //6) После добавления строки, количество строк увеличивается на 1:
+    rows++;
+    //7) Mission complete - строка добавлена. Возвращаем новый массив:
     return arr;
 }
